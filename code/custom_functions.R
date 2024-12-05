@@ -25,7 +25,7 @@ get_predictor_grid <- function(model, ...) {
 # function to get snail posteriors for different predictors
 get_snail_posts <- function(model = brm_taxon_mac_fine_vel, 
                             model_data = mod_d, 
-                            response = "taxon_snail"<
+                            response = "taxon_snail",
                             predictor1 = "velocity_s", 
                             predictor2 = "macrophyte_s",
                             predictor3 = "fines_s") {

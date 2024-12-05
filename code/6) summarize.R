@@ -22,15 +22,15 @@ fines_mean_sd = tibble(mean = attributes(snail_density$fines_s)$`scaled:center`,
 predictors_mean_sd = bind_rows(velocity_mean_sd, macrophyte_mean_sd, fines_mean_sd)
 
 # load models -------------------------------------------------------
-brm_intonly = readRDS(file = "models/brm_intonly.rds")
-brm_int1 = readRDS(file = "models/brm_int.rds")
-brm_intonly_randzi = readRDS(file = "models/brm_intonly_randzi.rds")
-brm_velocity = readRDS(file = "models/brm_velocity.rds")
-brm_velocity_elev = readRDS(file = "models/brm_velocity_elev.rds")
-brm_velocity_fines = readRDS(file = "models/brm_velocity_fines.rds")
-brm_fines = readRDS(file = "models/brm_fines.rds")
-brm_macrophytes = readRDS("models/brm_macrophytes.rds")
-brm_mac_vel_fines = readRDS("models/brm_mac_vel_fines.rds")
+# brm_intonly = readRDS(file = "models/brm_intonly.rds")
+# brm_int1 = readRDS(file = "models/brm_int.rds")
+# brm_intonly_randzi = readRDS(file = "models/brm_intonly_randzi.rds")
+# brm_velocity = readRDS(file = "models/brm_velocity.rds")
+# brm_velocity_elev = readRDS(file = "models/brm_velocity_elev.rds")
+# brm_velocity_fines = readRDS(file = "models/brm_velocity_fines.rds")
+# brm_fines = readRDS(file = "models/brm_fines.rds")
+# brm_macrophytes = readRDS("models/brm_macrophytes.rds")
+# brm_mac_vel_fines = readRDS("models/brm_mac_vel_fines.rds")
 brm_taxon_mac_fine_vel = readRDS("models/brm_taxon_mac_fine_vel.rds")
 
 # calculate effects  -------------------------------------------------------
@@ -88,6 +88,7 @@ slopes_raw = bind_rows(slope_taxa_raw, slope_overall_raw)
   pivot_wider(names_from = name, values_from = parameters)
 )
 
+write_csv(slope_table_raw, file = "tables/slope_table_raw.csv")
 
 slope_table_percentchange = post_int_slopes %>% 
   pivot_longer(cols = c(intercept, slope), names_to = "parameter", values_to = "parameter_value") %>% 
