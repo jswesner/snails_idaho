@@ -159,7 +159,7 @@ capture_probs_taxa = mod_d %>%
 capture_probs_overall = tibble(site_f = unique(snail_density$site_f)) %>%
   mutate(macrophyte_s = 0, fines_s = 0, velocity_s = 0) %>% 
   add_epred_draws(brm_total_snails, re_formula = ~(1|site_f), dpar = "zi") %>% 
-  mutate(taxon = "All Snail Taxa",
+  mutate(taxon = "All Snails",
          taxon_order = "a) All Snails")
 
 capture_probs = bind_rows(capture_probs_taxa, capture_probs_overall)
@@ -175,7 +175,7 @@ plot_capture_probs = capture_probs %>%
   geom_jitter(data = capture_prob_data, width = 0.2, height = 0,
               alpha = 0.6, shape = "|") +
   labs(x = "(upstream)                Site                (downstream)",
-       y = "Capture Probability") +
+       y = "Occurrence Probability") +
   guides(color = "none",
          fill = "none") +
   facet_wrap(~taxon_order, ncol = 1) +
@@ -188,3 +188,76 @@ plot_capture_probs = capture_probs %>%
 ggsave(plot_capture_probs, file = "plots/plot_capture_probs.jpg", width = 5, height = 9)
 ggsave(plot_capture_probs, file = "plots/plot_capture_probs.tif", width = 5, height = 9, bg = "white")
 
+
+# mean density by site ----------------------------------------------------
+
+site_posts = brm_total_snails$data %>% 
+  select(-total_snail) %>% 
+  distinct() %>% 
+  add_epred_draws(brm_total_snails) %>% 
+  group_by(.draw, site_f) %>% 
+  reframe(.epred = mean(.epred)) %>% 
+  mutate(taxon = "All Snails")
+
+site_posts_taxon = brm_taxon_mac_fine_vel$data %>% 
+  select(-taxon_snail) %>% 
+  distinct() %>% 
+  add_epred_draws(brm_taxon_mac_fine_vel) %>% 
+  group_by(.draw, site_f, taxon) %>% 
+  reframe(.epred = mean(.epred))
+
+site_posts_all = bind_rows(site_posts, site_posts_taxon) %>% 
+  mutate(taxon = case_when(taxon == "Pyrgulopsis" ~ "*Pyrgulopsis*",
+                           taxon == "Fossaria" ~ "*Fossaria*",
+                           taxon == "Physa" ~ "*Physa*",
+                           TRUE ~ "All Snails")) %>% 
+  left_join(post_preds_regression  %>% ungroup %>% distinct(taxon, taxon_order))
+
+saveRDS(site_posts_all, file = "posteriors/site_posts_all.rds")
+
+pred_data_all %>% 
+  left_join(post_preds_regression  %>% ungroup %>% distinct(taxon, taxon_order)) %>% 
+  ggplot(aes(x = site_f, y = .epred + 1)) + 
+  geom_point(aes(fill = taxon_order), shape = 21, color = "black",
+             size = 1) +
+  facet_wrap(~taxon_order) +
+  tidybayes::stat_pointinterval(data = site_posts_all) + 
+  scale_y_log10() +
+  labs(x = "(upstream)                Site                (downstream)",
+       y = "Total Snails per Quadrat + 1",
+       fill = "",
+       color = "") +
+  guides(fill = "none",
+         color = "none") +
+  scale_fill_brewer(type = 'qual') + 
+  theme_default() +
+  theme(strip.text = element_markdown(hjust = 0)) +
+  NULL
+
+
+
+plot_density_site = site_posts_all %>% 
+  ggplot(aes(x = site_f, y = .epred + 1, fill = taxon_order)) +
+  geom_line(data = . %>% filter(.draw <= 500),
+            aes(group = .draw, color = taxon_order), alpha = 0.02) + 
+  # geom_violin(linewidth = 0.2) + 
+  geom_boxplot(aes(group = site_f), outlier.shape = NA, width = 0.5) +
+  geom_jitter(data = pred_data_all %>% 
+                left_join(post_preds_regression  %>% ungroup %>% distinct(taxon, taxon_order)),
+              size = 0.4,
+              width = 0.05, height = 0,
+              alpha = 0.6) +
+  labs(x = "(upstream)                Site                (downstream)",
+       y = "Total Snails per Quadrat + 1") +
+  guides(color = "none",
+         fill = "none") +
+  facet_wrap(~taxon_order, ncol = 1) +
+  scale_color_brewer(type = 'qual') + 
+  scale_fill_brewer(type = 'qual') +
+  scale_y_log10() +
+  theme_default() +
+  theme(strip.text = element_markdown(hjust = 0)) +
+  NULL
+
+ggsave(plot_density_site, file = "plots/plot_density_site.jpg", width = 5, height = 9)
+ggsave(plot_density_site, file = "plots/plot_density_site.tif", width = 5, height = 9, bg = "white")

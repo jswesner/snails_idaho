@@ -157,3 +157,20 @@ capture_probs = readRDS(file = "posteriors/capture_probs.rds")
 capture_probs %>% group_by(site_f, taxon) %>%
   median_qi(1-zi) %>% 
   filter(site_f == "1" | site_f == "10")
+
+
+# site densities ----------------------------------------------------------
+
+site_posts_all = readRDS(file = "posteriors/site_posts_all.rds")
+
+table_density_site = site_posts_all %>% 
+  group_by(taxon, site_f) %>% 
+  median_qi(.epred) %>% 
+  rename(median = .epred,
+         low95 = .lower,
+         high95 = .upper) %>% 
+  select(-.width, -.point, -.interval) %>% 
+  mutate(taxon = str_remove(taxon, "\\*"),
+         taxon = str_remove(taxon, "\\*"))
+
+write_csv(table_density_site, file = "tables/table_density_site.csv")
