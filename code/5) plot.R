@@ -154,11 +154,13 @@ for(i in 1:length(post_preds_regression_list)){
 }
 
 plot_density_regression = (figure_2_list[[1]] + theme(axis.text.x = element_blank()))/
-  (figure_2_list[[2]] + theme(axis.text.x = element_blank()))/
-  (figure_2_list[[3]] + theme(axis.text.x= element_blank()))/
-  (figure_2_list[[4]] + theme(axis.text.x = element_blank()))/
+  (figure_2_list[[4]] + theme(axis.text.x = element_blank(),
+                              strip.text.x = element_blank()))/
+  (figure_2_list[[2]] + theme(axis.text.x= element_blank(),
+                              strip.text.x = element_blank()))/
+  (figure_2_list[[3]] + theme(axis.text.x = element_blank(),
+                              strip.text.x = element_blank()))/
   plot_layout(axis_titles = "collect")
-
 
 
 ggsave(plot_density_regression, file = "plots/fig_2_plot_density_regression.tif", width = 6.5, height = 8, bg = "white")
