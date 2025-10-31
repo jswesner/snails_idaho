@@ -48,7 +48,7 @@ get_snail_posts <- function(model = brm_taxon_mac_fine_vel,
   response_sym <- sym(response)
   
   pred_grid <- model_data %>%
-    select(-!!response_sym := 0) %>% 
+    select(-!!response_sym) %>% 
     ungroup() %>% 
     distinct(taxon) %>%  
     expand_grid(!!predictor1_sym := seq(min(predictor1_data, na.rm = TRUE),
@@ -65,6 +65,49 @@ get_snail_posts <- function(model = brm_taxon_mac_fine_vel,
                     re_formula =  ~ (1 + macrophyte_s + fines_s + velocity_s | taxon))
 }
 
+
+# function to get snail posteriors for different predictors no taxon
+get_snail_posts_no_taxon <- function(model = brm_taxon_mac_fine_vel, 
+                            model_data = mod_d, 
+                            response = "taxon_snail",
+                            predictor1 = "velocity_s", 
+                            predictor2 = "macrophyte_s",
+                            predictor3 = "fines_s") {
+  
+  # Check if predictor columns exist and contain finite values
+  if (!predictor1 %in% names(model_data)) {
+    stop("Predictor1 column does not exist in model_data.")
+  }
+  
+  predictor1_data <- model_data[[predictor1]]
+  
+  if (all(is.na(predictor1_data)) || !any(is.finite(predictor1_data))) {
+    stop("Predictor1 column contains no finite values.")
+  }
+  
+  # Dynamically unquote column names
+  predictor1_sym <- sym(predictor1)
+  predictor2_sym <- sym(predictor2)
+  predictor3_sym <- sym(predictor3)
+  response_sym <- sym(response)
+  
+  pred_grid <- model_data %>%
+    select(-!!response_sym) %>% 
+    ungroup() %>%  
+    select(-taxon) %>% 
+    expand_grid(!!predictor1_sym := seq(min(predictor1_data, na.rm = TRUE),
+                                        max(predictor1_data, na.rm = TRUE),
+                                        length.out = 30)) %>% 
+    mutate(!!predictor2_sym := 0,
+           !!predictor3_sym := 0, 
+           site_f = "new",
+           quadrat_f = "new",
+           transect_f = "new")
+  
+  pred_grid %>% 
+    add_epred_draws(model, allow_new_levels = TRUE, dpar = T,
+                    re_formula =  NA)
+}
 
 
 # get parameters for scaled variables -------------------------------------

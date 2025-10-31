@@ -130,7 +130,7 @@ make_fig2 = function(posteriors = NA,
     geom_point(data = pred_data_all %>% 
                  filter(taxon == unique(plot_data$taxon)),
                size = 0.1, shape = ".") +
-    scale_y_log10() +
+    scale_y_log10(labels = scales::comma) +
     labs(x = "Predictor value",
          y = bquote("Total snails/m"^2 ~ "+ 1"),
          fill = "",
@@ -158,8 +158,7 @@ plot_density_regression = (figure_2_list[[1]] + theme(axis.text.x = element_blan
                               strip.text.x = element_blank()))/
   (figure_2_list[[2]] + theme(axis.text.x= element_blank(),
                               strip.text.x = element_blank()))/
-  (figure_2_list[[3]] + theme(axis.text.x = element_blank(),
-                              strip.text.x = element_blank()))/
+  (figure_2_list[[3]] + theme(strip.text.x = element_blank()))/
   plot_layout(axis_titles = "collect")
 
 
@@ -227,7 +226,7 @@ make_fig3 = function(posteriors = NA,
     NULL
   
 }
-
+color_list = temp_data[[1]] %>% distinct(fill, PANEL)
 capture_probs_list = capture_probs %>% 
   group_by(taxon_order) %>% 
   mutate(PANEL = case_when(taxon == "Pyrgulopsis" ~ "2",
@@ -246,7 +245,7 @@ for(i in 1:length(capture_probs_list)){
 plot_capture_probs = (figure_3_list[[1]] + theme(axis.text.x = element_blank()))/
   (figure_3_list[[2]] + theme(axis.text.x = element_blank()))/
   (figure_3_list[[3]] + theme(axis.text.x= element_blank()))/
-  (figure_3_list[[4]] + theme(axis.text.x = element_blank()))/
+  (figure_3_list[[4]] )/
   plot_layout(axis_titles = "collect")
 
 ggsave(plot_capture_probs, file = "plots/fig_3_plot_capture_probs.jpg", width = 5, height = 9)
@@ -287,7 +286,7 @@ temp = pred_data_all %>%
              size = 1) +
   facet_wrap(~taxon_order) +
   tidybayes::stat_pointinterval(data = site_posts_all) + 
-  scale_y_log10() +
+  scale_y_log10(labels = scales::comma)  +
   labs(x = "(upstream)  <---------  Reach --------->       (downstream)",
        y = "Total Snails per Quadrat + 1",
        fill = "",
@@ -361,9 +360,9 @@ for(i in 1:length(site_posts_all_list)){
 }
 
 library(patchwork)
-plot_density_site = (fig_1_list[[1]] + theme(axis.text = element_blank()))/
- (fig_1_list[[2]] + theme(axis.text = element_blank()))/
-  (fig_1_list[[3]] + theme(axis.text = element_blank()))/
+plot_density_site = (fig_1_list[[1]] + theme(axis.text.x = element_blank()))/
+ (fig_1_list[[2]] + theme(axis.text.x = element_blank()))/
+  (fig_1_list[[3]] + theme(axis.text.x = element_blank()))/
   fig_1_list[[4]] +
   plot_layout(axis_titles = "collect")
 
