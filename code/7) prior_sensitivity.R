@@ -3,6 +3,8 @@ library(janitor)
 library(lubridate)
 library(tidybayes)
 library(brms)
+library(ggh4x)
+library(ggtext)
 
 source("code/custom_functions.R") # function to extract posteriors and get mean and sd of predictors
 
@@ -102,7 +104,7 @@ make_prior_post = function(posteriors = NA){
     facet_grid2(taxon ~ numbered_predictor, scales = "free_x") +
     scale_y_log10(labels = scales::comma) +
     labs(x = "Predictor value",
-         y = bquote("Total snails/m"^2 ~ "+ 1"),
+         y = bquote("Snail density (no./m"^2 ~ "+ 1)"),
          fill = "",
          color = "") +
     guides(color = "none") +
@@ -121,6 +123,8 @@ figure_s1_list = list()
 for(i in 1:length(prior_post_preds_regression_list)){
   figure_s1_list[[i]] = make_prior_post(posteriors = prior_post_preds_regression_list[[i]])
 }
+
+library(patchwork)
 
 (plot_density_regression_prior = (figure_s1_list[[3]] + theme(axis.text.x = element_blank()))/
     # (figure_s1_list[[4]] + theme(axis.text.x = element_blank(),
@@ -143,12 +147,13 @@ ggsave(plot_density_regression_prior, file = "plots/fig_s1_plot_density_regressi
 brm_total_snails = readRDS(file = "models/brm_total_snails.rds")
 
 # rerun with weaker priors
-brm_total_snails_weak = update(brm_total_snails,
-                                     prior = c(prior(normal(3, 4), class = "Intercept"),
-                                               prior(exponential(2), class = "sd"),
-                                               prior(normal(0, 2), class = "b")))
-
-saveRDS(brm_total_snails_weak, file = "models/brm_total_snails_weak.rds")
+# brm_total_snails_weak = update(brm_total_snails,
+#                                      prior = c(prior(normal(3, 4), class = "Intercept"),
+#                                                prior(exponential(2), class = "sd"),
+#                                                prior(normal(0, 2), class = "b")))
+# 
+# saveRDS(brm_total_snails_weak, file = "models/brm_total_snails_weak.rds")
+brm_total_snails_weak = readRDS(file = "models/brm_total_snails_weak.rds")
 
 
 # extract posteriors 
@@ -246,7 +251,7 @@ plot_prior_sensitivity1 = all_main_preds %>%
              # size = 0.1, shape = ".") +
   scale_y_log10() +
   labs(x = "Predictor Value",
-       y = bquote("Total snails/m"^2 ~ "+ 1"),
+       y = bquote("Snail density (no./m"^2 ~ "+ 1)"),
        fill = "",
        color = "") +
   guides(fill = "none",
@@ -268,7 +273,7 @@ plot_prior_sensitivity2 = all_main_preds %>%
   # size = 0.1, shape = ".") +
   scale_y_log10() +
   labs(x = "Predictor Value",
-       y = bquote("Total snails/m"^2 ~ "+ 1"),
+       y = bquote("Snail density (no./m"^2 ~ "+ 1)"),
        fill = "",
        color = "") +
   guides(fill = "none",
